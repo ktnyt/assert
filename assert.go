@@ -74,7 +74,7 @@ func Equal(v, e interface{}) F {
 	return func(t *testing.T) {
 		t.Helper()
 		if !reflect.DeepEqual(v, e) {
-			t.Fatalf("\nexpected: %#v\n  actual: %#v", v, e)
+			t.Fatalf("\nexpected: %#v\n  actual: %#v", e, v)
 		}
 	}
 }
