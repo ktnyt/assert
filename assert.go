@@ -9,10 +9,18 @@ import (
 // F represents a testing function.
 type F func(testing.TB)
 
+// Nop does nothing.
+func Nop(tb testing.TB) {}
+
+// Eval runs the given function and returns a Nop.
+func Eval(f func()) F { f(); return Nop }
+
 // C creates a test case for the given name and testing function.
 func C(name string, tfs ...F) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		switch v := tb.(type) {
 		case *testing.T:
 			v.Run(name, func(t *testing.T) { t.Helper(); Apply(t, tfs...) })
@@ -24,9 +32,11 @@ func C(name string, tfs ...F) F {
 	}
 }
 
-// Apply the given testing.TB object to a testing functions as a helper.
+// Apply the given testing.TB object to testing functions as a helper.
 func Apply(tb testing.TB, tfs ...F) {
-	tb.Helper()
+	if v, ok := tb.(interface{ Helper() }); ok {
+		v.Helper()
+	}
 	for _, tf := range tfs {
 		tf(tb)
 	}
@@ -35,7 +45,9 @@ func Apply(tb testing.TB, tfs ...F) {
 // All combines the given testing functions into a single testing function.
 func All(tfs ...F) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		for _, tf := range tfs {
 			tf(tb)
 		}
@@ -45,7 +57,9 @@ func All(tfs ...F) F {
 // True expects the given condition to be true.
 func True(cond bool) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		if !cond {
 			tb.Fatal("expected true")
 		}
@@ -55,7 +69,9 @@ func True(cond bool) F {
 // False expects the given condition to be false.
 func False(cond bool) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		if cond {
 			tb.Fatal("expected false")
 		}
@@ -65,7 +81,9 @@ func False(cond bool) F {
 // NoError expects the given error to be nil.
 func NoError(err error) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		if err != nil {
 			tb.Fatalf("\nunexpected error: %s", err.Error())
 		}
@@ -75,7 +93,9 @@ func NoError(err error) F {
 // IsError expects the given error to be set.
 func IsError(err error) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		if err == nil {
 			tb.Fatalf("expected error")
 		}
@@ -85,7 +105,9 @@ func IsError(err error) F {
 // Equal expects the given values to be equal.
 func Equal(v, e interface{}) F {
 	return func(tb testing.TB) {
-		tb.Helper()
+		if v, ok := tb.(interface{ Helper() }); ok {
+			v.Helper()
+		}
 		if !reflect.DeepEqual(v, e) {
 			tb.Fatalf("\nexpected: %#v\n  actual: %#v", e, v)
 		}
